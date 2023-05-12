@@ -16,7 +16,7 @@ def hash_string(to_hash):
 
 def build_docker_image(no_cache=False):
   dockerfile_string = """
-"""  
+"""
   # li setup: build the docker image.
   dockerfile = f"""
 FROM buildpack-deps:focal
@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -yqq libboost-context-dev libboost-dev wge
 RUN git clone https://github.com/matt-42/lithium.git /lithium
 RUN /lithium/install.sh /usr"""
 
-  print(f"Building lithium docker image.")
+  print("Building lithium docker image.")
 
   no_cache_flag = "--no-cache " if no_cache else ""
 
@@ -123,11 +123,7 @@ def compile_and_run(source_files, run_args, publish_arg, build_dir = None, debug
   create_cmake_script_if_needed(source_files, build_dir)
   # Shell script to build & run.
   compile_run_script = f"cd /build && cmake . && make && ./lithium_server {' '.join(run_args)}"
-  # Run the shell script in docker.
-  # --rm delete the container after running.
-  network = "--network host"
-  if publish_arg:
-      network="-p " + publish_arg
+  network = f"-p {publish_arg}" if publish_arg else "--network host"
   subprocess.run(f"docker run --rm -ti {network} -v {source_dir}:/source -v {build_dir}:/build lithium_docker_image /bin/bash -c".split(" ") + [compile_run_script])
 
 
